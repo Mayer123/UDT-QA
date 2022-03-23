@@ -1,0 +1,86 @@
+# @package _group_
+
+# Gold text passages as positives, negatives mined with BM25 on text-only index, this is downloaded from official DPR repo
+nq_train_bm25:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-train.json
+
+# Gold text passages as positives, negatives mined with a trained DPR model on text+raw_table index 
+nq_train_dpr_raw_tab_index:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-train_text_pos_dpr_neg_raw_index.json
+
+# Gold raw table chunk as positives, negatives mined with BM25 on raw_table-only index 
+nq_train_raw_tab_bm25:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-train_raw_table_pos_bm25_neg.json
+
+# Gold raw table chunk as positives, negatives mined with a trained DPR model on text+raw_table index 
+nq_train_raw_tab_dpr:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-train_raw_table_pos_dpr_neg.json
+
+# Gold text passages/raw table chunk as positives, negatives mined with a trained DPR model on text+raw_table index 
+nq_dev_raw_tab_index:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-dev_text_or_raw_table_pos_dpr_neg.json
+
+# Gold text passages as positives, negatives mined with a trained DPR model on text+verbalized_table index 
+nq_train_dpr_v_tab_index:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-train_text_pos_dpr_neg_v_index.json
+
+# Gold verbalized table chunk as positives, negatives mined with BM25 verbalized_table-only index
+nq_train_v_tab_bm25:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-train_v_table_pos_bm25_neg.json
+
+# Gold verbalized table chunk as positives, negaives mined with a trained DPR model on text+verbalized_table index 
+nq_train_v_tab_dpr:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-train_v_table_pos_dpr_neg.json 
+
+# Gold text passages/verbalized table chunk as positives, negaives mined with a trained DPR model on text+verbalized_table index 
+nq_dev_v_tab_index:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-dev_text_or_v_table_pos_dpr_neg.json
+
+# Gold text passages/verbalized table chunk/weakly-gold verbalized kb as positives, negatives mined with a trained DPR model on text+verbalized_table+verbalized_kb index
+nq_train_dpr_v_all_index:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-train_text_table_kb_pos_dpr_neg_v_index_all.json
+
+# Weakly-gold verbalized kb as positives (mined with BM25+heuristic filtering), negatives mined with BM25 on verbalized_kb-only index 
+nq_train_v_kb_bm25:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-train_kb_pos_bm25_neg.json
+
+# Gold text passages/verbalized table chunk/weakly-gold verbalized kb as positives, negatives mined with a trained DPR model on text+verbalized_table+verbalized_kb index
+nq_dev_v_all_index:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/nq-dev_text_table_kb_pos_dpr_neg_v_index_all.json
+
+# Weakly-gold text passages as positives, negatives mined with BM25 on text-only index, this is downloaded from official DPR repo
+webq_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/webq-train.json
+
+# Weakly-gold verbalized kb as positives (mined with question/answer entity matching), negatives mined with BM on verbalized_kb-only index
+webq_train_v_kb_bm25:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/webq-train_v_kb_pos_bm25_neg.json
+
+# Weakly-gold verbalized table chunk as positives (mined with BM25), negatives mined with BM25 on verbalized_table-only index
+webq_train_v_tab_bm25:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/webq-train_v_table_pos_bm25_neg.json
+
+# Weakly-gold text passages/verbalized kb/verbalized table chunk as positives, negatives mined with a trained DPR model on text+verbalized_table+verbalized_kb index
+webq_train_dpr_v_all_index:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/webq-train_text_table_kb_pos_dpr_neg_v_index_all.json
+
+# Weakly-gold text passages/verbalized kb/verbalized table chunk as positives, negatives mined with a trained DPR model on text+verbalized_table+verbalized_kb index
+webq_dev_v_all_index:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/webq-dev_text_table_kb_pos_dpr_neg_v_index_all.json

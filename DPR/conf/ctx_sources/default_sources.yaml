@@ -1,0 +1,19 @@
+# @package _group_
+
+dpr_wiki:
+  _target_: dpr.data.retriever_data.CsvCtxSrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/wikipedia_split/psgs_w100.tsv
+  id_prefix: 'wiki:'
+
+raw_table:
+  _target_: dpr.data.retriever_data.MyJsonlTablesCtxSrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/tables/all_raw_table_chunks_for_index.json
+
+verbalized_table:
+  _target_: dpr.data.retriever_data.MyJsonlTablesCtxSrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/tables/all_verbalized_table_chunks_for_index.json
+
+verbalized_kb:
+  _target_: dpr.data.retriever_data.CsvCtxSrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/kb/verbalized_WD_graphs_for_index.tsv
+  id_prefix: 'kelm-v3:'

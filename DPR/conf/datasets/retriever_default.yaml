@@ -1,0 +1,34 @@
+# @package _group_
+
+nq_test:
+  _target_: dpr.data.retriever_data.CsvQASrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/qas/nq-test.csv
+
+nq_train:
+  _target_: dpr.data.retriever_data.CsvQASrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/qas/nq-train.csv
+
+nq_dev:
+  _target_: dpr.data.retriever_data.CsvQASrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/qas/nq-dev.csv
+
+nq_train_table_answerable:
+  _target_: dpr.data.retriever_data.JsonlQASrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/qas/nq_table_answerable_train.jsonl
+
+nq_dev_table_answerable:
+  _target_: dpr.data.retriever_data.JsonlQASrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/qas/nq_table_answerable_dev.jsonl
+
+webq_test:
+  _target_: dpr.data.retriever_data.CsvQASrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/qas/webq-test.csv
+
+webq_train:
+  _target_: dpr.data.retriever_data.JsonlQASrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/qas/webq-train.jsonl
+
+webq_dev:
+  _target_: dpr.data.retriever_data.JsonlQASrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/qas/webq-dev.jsonl
+  
