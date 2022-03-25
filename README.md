@@ -79,6 +79,7 @@ NQ | Text+Table | Raw | nq_raw_tables | nq_train_bm25,nq_train_dpr_raw_tab_index
 NQ | Text+Table | Verbalized | nq_v_tables | nq_train_bm25,nq_train_dpr_v_tab_index,nq_train_v_tab_bm25,nq_train_v_tab_dpr | nq_dev_v_tab_index
 NQ | Text+Table+KB | Verbalized | nq_v_all | nq_train_bm25,nq_train_dpr_v_all_index,nq_train_v_tab_bm25,nq_train_v_kb_bm25 | nq_dev_v_all_index
 WebQ | Text+Table+KB | Verbalized | webq_v_all | webq_train,webq_train_v_kb_bm25,webq_train_v_tab_bm25,webq_train_dpr_v_all_index | webq_dev_v_all_index
+
 Training on NQ takes about 1.5 days to finish. After training is done, you can generate the encoded embeddings with following,
 ```
 python generate_dense_embeddings.py model_file=your_best_model_checkpoint ctx_src=verbalized_table \
