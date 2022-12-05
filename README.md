@@ -95,12 +95,20 @@ Stay tuned for the official implementation of [UnitedQA](https://github.com/micr
 
 ## Cite 
 ```
-@misc{ma2021open,
-    title={Open Domain Question Answering with A Unified Knowledge Interface},
-    author={Kaixin Ma and Hao Cheng and Xiaodong Liu and Eric Nyberg and Jianfeng Gao},
-    year={2021},
-    eprint={2110.08417},
-    archivePrefix={arXiv},
-    primaryClass={cs.CL}
+@inproceedings{ma-etal-2022-open,
+    title = "Open Domain Question Answering with A Unified Knowledge Interface",
+    author = "Ma, Kaixin  and
+      Cheng, Hao  and
+      Liu, Xiaodong  and
+      Nyberg, Eric  and
+      Gao, Jianfeng",
+    booktitle = "Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+    month = may,
+    year = "2022",
+    address = "Dublin, Ireland",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.acl-long.113",
+    doi = "10.18653/v1/2022.acl-long.113",
+    pages = "1605--1620",
 }
 ```
