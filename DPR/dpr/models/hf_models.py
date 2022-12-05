@@ -23,6 +23,7 @@ from transformers.tokenization_electra import ElectraTokenizer
 from transformers.modeling_electra import ElectraConfig, ElectraModel
 
 from dpr.models.biencoder import BiEncoder
+from dpr.models.biencoder_link_table import BiEncoderTableLink
 from dpr.utils.data_utils import Tensorizer
 from .reader import Reader
 from dpr.utils.model_utils import load_states_from_checkpoint, get_model_obj
@@ -117,6 +118,51 @@ def get_any_biencoder_components(cfg, inference_only: bool = False, **kwargs):
 
     biencoder = BiEncoder(
         question_encoder, ctx_encoder, fix_ctx_encoder=fix_ctx_encoder
+    )
+
+    if cfg.encoder.pretrained_file:
+        logger.info("loading biencoder weights from %s, this should be a trained DPR model checkpoint", cfg.encoder.pretrained_file)
+        checkpoint = load_states_from_checkpoint(cfg.encoder.pretrained_file)
+        model_to_load = get_model_obj(biencoder)
+        model_to_load.load_state(checkpoint)
+
+    optimizer = (
+        get_optimizer(
+            biencoder,
+            learning_rate=cfg.train.learning_rate,
+            adam_eps=cfg.train.adam_eps,
+            weight_decay=cfg.train.weight_decay,
+        )
+        if not inference_only
+        else None
+    )
+
+    tensorizer = get_any_tensorizer(cfg)
+    return tensorizer, biencoder, optimizer
+
+def get_table_link_biencoder_components(cfg, inference_only: bool = False, **kwargs):
+    dropout = cfg.encoder.dropout if hasattr(cfg.encoder, "dropout") else 0.0
+    question_encoder = HFEncoder(
+        cfg.encoder.pretrained_model_cfg,
+        projection_dim=cfg.encoder.projection_dim,
+        dropout=dropout,
+        pretrained=cfg.encoder.pretrained,
+        **kwargs
+    )
+    ctx_encoder = HFEncoder(
+        cfg.encoder.pretrained_model_cfg,
+        projection_dim=cfg.encoder.projection_dim,
+        dropout=dropout,
+        pretrained=cfg.encoder.pretrained,
+        **kwargs
+    )
+
+    fix_ctx_encoder = cfg.fix_ctx_encoder if hasattr(cfg, "fix_ctx_encoder") else False
+    fix_q_encoder = cfg.fix_q_encoder if hasattr(cfg, "fix_q_encoder") else False
+
+    biencoder = BiEncoderTableLink(
+        question_encoder, ctx_encoder, fix_q_encoder=fix_q_encoder, fix_ctx_encoder=fix_ctx_encoder, 
+        label_question=cfg.label_question if 'label_question' in cfg else False
     )
 
     if cfg.encoder.pretrained_file:

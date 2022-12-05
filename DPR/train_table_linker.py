@@ -25,7 +25,7 @@ from torch import Tensor as T
 from torch import nn
 
 from dpr.models import init_biencoder_components
-from dpr.models.biencoder import BiEncoder, BiEncoderNllLoss, BiEncoderBatch
+from dpr.models.biencoder_link_table import BiEncoderTableLink, BiEncoderNllLoss, BiEncoderBatch
 from dpr.options import (
     setup_cfg_gpu,
     set_seed,
@@ -49,7 +49,7 @@ from dpr.utils.model_utils import (
     get_model_obj,
     load_states_from_checkpoint,
 )
-
+from torch.cuda.amp import autocast
 logger = logging.getLogger()
 setup_logger(logger)
 
@@ -78,7 +78,8 @@ class BiEncoderTrainer(object):
         tensorizer, model, optimizer = init_biencoder_components(
             cfg.encoder.encoder_model_type, cfg
         )
-
+        if cfg.label_question:
+            tensorizer.set_pad_to_max(False)
         model, optimizer = setup_for_distributed_mode(
             model,
             optimizer,
@@ -134,13 +135,13 @@ class BiEncoderTrainer(object):
 
         sharded_iterators = [
             ShardedDataIterator(
-                ds,
+                ds.data,
                 shard_id=self.shard_id,
                 num_shards=self.distributed_factor,
                 batch_size=batch_size,
                 shuffle=shuffle,
                 shuffle_seed=shuffle_seed,
-                offset=offset,
+                offset=offset,  strict_batch_size=True
             )
             for ds in hydra_datasets
         ]
@@ -164,7 +165,7 @@ class BiEncoderTrainer(object):
             offset=self.start_batch,
             rank=cfg.local_rank,
         )
-        max_iterations = train_iterator.get_max_iterations()
+        max_iterations = train_iterator.max_iterations
         logger.info("  Total iterations per epoch=%d", max_iterations)
         if max_iterations == 0:
             logger.warning("No data found for training.")
@@ -222,18 +223,26 @@ class BiEncoderTrainer(object):
             validation_loss = 0
         else:
             if epoch >= cfg.val_av_rank_start_epoch:
-                validation_loss = self.validate_average_rank()
+                validation_loss = self.validate_average_rank_use_cell()
             else:
-                validation_loss = self.validate_nll()
+                validation_loss, f1 = self.validate_nll()
 
         if save_cp:
-            cp_name = self._save_checkpoint(scheduler, epoch, iteration)
-            logger.info("Saved checkpoint to %s", cp_name)
+            if cfg.label_question:
+                if f1 > (self.best_validation_result or f1 - 1):
+                    self.best_validation_result = f1
+                    cp_name = self._save_checkpoint(scheduler, epoch, iteration)
+                    self.best_cp_name = cp_name
+                    logger.info("New Best validation checkpoint %s", cp_name)
+            else:
+                if epoch >= cfg.val_av_rank_start_epoch:
+                    cp_name = self._save_checkpoint(scheduler, epoch, iteration)
+                    logger.info("Saved checkpoint to %s", cp_name)
 
-            if validation_loss < (self.best_validation_result or validation_loss + 1):
-                self.best_validation_result = validation_loss
-                self.best_cp_name = cp_name
-                logger.info("New Best validation checkpoint %s", cp_name)
+                    if validation_loss < (self.best_validation_result or validation_loss + 1):
+                        self.best_validation_result = validation_loss
+                        self.best_cp_name = cp_name
+                        logger.info("New Best validation checkpoint %s", cp_name)
 
     def validate_nll(self) -> float:
         logger.info("NLL validation ...")
@@ -247,6 +256,7 @@ class BiEncoderTrainer(object):
         data_iterator = self.dev_iterator
 
         total_loss = 0.0
+        total_grounding_loss = 0.0
         start_time = time.time()
         total_correct_predictions = 0
         num_hard_negatives = cfg.train.hard_negatives
@@ -255,17 +265,21 @@ class BiEncoderTrainer(object):
         batches = 0
         dataset = 0
 
+        total_valid = 0
+        total_pred = 0
+        total_correct = 0
+
         for i, samples_batch in enumerate(data_iterator.iterate_ds_data()):
             if isinstance(samples_batch, Tuple):
                 samples_batch, dataset = samples_batch
             #logger.info("Eval step: %d ,rnk=%s", i, cfg.local_rank)
-            biencoder_input = BiEncoder.create_biencoder_input2(
+            biencoder_input = BiEncoderTableLink.create_biencoder_input_use_cell(
                 samples_batch,
                 self.tensorizer,
                 True,
                 num_hard_negatives,
                 num_other_negatives,
-                shuffle=False,
+                shuffle=False, label_question=cfg.label_question
             )
 
             # get the token to be used for representation selection
@@ -274,7 +288,7 @@ class BiEncoderTrainer(object):
                 biencoder_input.question_ids, self.tensorizer
             )
             encoder_type = ds_cfg.encoder_type
-            loss, correct_cnt = _do_biencoder_fwd_pass(
+            loss, correct_cnt, grounding_loss, cells_need_link, q_labels = _do_biencoder_fwd_pass(
                 self.biencoder,
                 biencoder_input,
                 self.tensorizer,
@@ -282,39 +296,52 @@ class BiEncoderTrainer(object):
                 encoder_type=encoder_type,
                 rep_positions=rep_positions,
             )
-            total_loss += loss.item()
+            if loss:
+                total_loss += loss.item()
+            if grounding_loss:
+                total_grounding_loss += grounding_loss.item()
             total_correct_predictions += correct_cnt
+
+            if cells_need_link is not None:
+                predicted_cells = torch.argmax(cells_need_link, dim=-1)
+                pred_mask = (q_labels == -100)
+                predicted_cells[pred_mask] = 0
+                total_pred += predicted_cells.sum().item()
+                matched = (predicted_cells == q_labels)
+                valid_mask = (q_labels == 1)
+                matched = torch.logical_and(matched, valid_mask)
+                total_valid += valid_mask.sum().item()
+                total_correct += matched.sum().item()
+
             batches += 1
             if (i + 1) % log_result_step == 0:
                 logger.info(
-                    "Eval step: %d , used_time=%f sec., loss=%f ",
+                    "Eval step: %d , used_time=%f sec., loss=%f, grounding loss=%f",
                     i,
                     time.time() - start_time,
-                    loss.item(),
+                    loss.item() if loss else 0.0, grounding_loss.item() if grounding_loss else 0.0, 
                 )
         total_loss = total_loss / max(1, batches)     # for WebQ, the dev set is too small
+        total_grounding_loss = total_grounding_loss / max(1, batches) 
         total_samples = batches * cfg.train.dev_batch_size * self.distributed_factor
         correct_ratio = float(total_correct_predictions / max(1, total_samples))
+        recall = float(total_correct / max(total_valid, 1))
+        precision = float(total_correct / max(total_pred, 1))
+        if recall + precision == 0:
+            f1 = 0.0
+        else:
+            f1 = 2 * recall * precision / (recall + precision)
         logger.info(
-            "NLL Validation: loss = %f. correct prediction ratio  %d/%d ~  %f",
-            total_loss,
+            "NLL Validation: loss = %f. grounding loss = %f. correct prediction ratio  %d/%d ~  %f recall=%f, precision=%f, f1=%f",
+            total_loss, total_grounding_loss,
             total_correct_predictions,
             total_samples,
-            correct_ratio,
+            correct_ratio, recall, precision, f1,
         )
-        return total_loss
+        return total_loss, f1
 
-    def validate_average_rank(self) -> float:
-        """
-        Validates biencoder model using each question's gold passage's rank across the set of passages from the dataset.
-        It generates vectors for specified amount of negative passages from each question (see --val_av_rank_xxx params)
-        and stores them in RAM as well as question vectors.
-        Then the similarity scores are calculted for the entire
-        num_questions x (num_questions x num_passages_per_question) matrix and sorted per quesrtion.
-        Each question's gold passage rank in that  sorted list of scores is averaged across all the questions.
-        :return: averaged rank number
-        """
-        logger.info("Average rank validation ...")
+    def validate_average_rank_use_cell(self) -> float:
+        logger.info("Average rank validation use cell ...")
 
         cfg = self.cfg
         self.biencoder.eval()
@@ -331,6 +358,7 @@ class BiEncoderTrainer(object):
         q_represenations = []
         ctx_represenations = []
         positive_idx_per_question = []
+        full_pid_tensors = []
 
         num_hard_negatives = cfg.train.val_av_rank_hard_neg
         num_other_negatives = cfg.train.val_av_rank_other_neg
@@ -338,7 +366,6 @@ class BiEncoderTrainer(object):
         log_result_step = cfg.train.log_batch_step
         dataset = 0
         for i, samples_batch in enumerate(data_iterator.iterate_ds_data()):
-            # samples += 1
             if (
                 len(q_represenations)
                 > cfg.train.val_av_rank_max_qs / distributed_factor
@@ -347,19 +374,21 @@ class BiEncoderTrainer(object):
 
             if isinstance(samples_batch, Tuple):
                 samples_batch, dataset = samples_batch
-
-            biencoder_input = BiEncoder.create_biencoder_input2(
-                samples_batch,
-                self.tensorizer,
-                True,
-                num_hard_negatives,
-                num_other_negatives,
-                shuffle=False,
+           
+            biencoder_input = BiEncoderTableLink.create_biencoder_input_all_positives_use_cell(
+            samples_batch,
+            self.tensorizer,
+            True,
+            num_hard_negatives,
+            num_other_negatives,
+            shuffle=False,
             )
             biencoder_input = BiEncoderBatch(**move_to_device(biencoder_input._asdict(), cfg.device)) # This is only used to handle single-gpu case
             total_ctxs = len(ctx_represenations)
             ctxs_ids = biencoder_input.context_ids
             ctxs_segments = biencoder_input.ctx_segments
+            pid_tensors = biencoder_input.pid_tensors
+            full_pid_tensors.extend(pid_tensors.tolist())
             bsz = ctxs_ids.size(0)
 
             # get the token to be used for representation selection
@@ -372,12 +401,12 @@ class BiEncoderTrainer(object):
             # split contexts batch into sub batches since it is supposed to be too large to be processed in one batch
             for j, batch_start in enumerate(range(0, bsz, sub_batch_size)):
 
-                q_ids, q_segments = (
-                    (biencoder_input.question_ids, biencoder_input.question_segments)
+                q_ids, q_segments, q_rep_pos = (
+                    (biencoder_input.question_ids, biencoder_input.question_segments, biencoder_input.question_rep_pos)
                     if j == 0
-                    else (None, None)
+                    else (None, None, None)
                 )
-
+                #assert not q_rep_pos
                 if j == 0 and cfg.n_gpu > 1 and q_ids.size(0) == 1:
                     # if we are in DP (but not in DDP) mode, all model input tensors should have batch size >1 or 0,
                     # otherwise the other input tensors will be split but only the first split will be called
@@ -387,29 +416,33 @@ class BiEncoderTrainer(object):
                 ctx_seg_batch = ctxs_segments[
                     batch_start : batch_start + sub_batch_size
                 ]
-
                 q_attn_mask = self.tensorizer.get_attn_mask(q_ids)
                 ctx_attn_mask = self.tensorizer.get_attn_mask(ctx_ids_batch)
                 with torch.no_grad():
-                    q_dense, ctx_dense = self.biencoder(
-                        q_ids,
-                        q_segments,
-                        q_attn_mask,
-                        ctx_ids_batch,
-                        ctx_seg_batch,
-                        ctx_attn_mask,
-                        encoder_type=encoder_type,
-                        representation_token_pos=rep_positions,
-                    )
+                    with autocast():
+                        if isinstance(self.biencoder, torch.nn.DataParallel) or isinstance(self.biencoder, torch.nn.parallel.DistributedDataParallel):
+                            fwd_call = self.biencoder.module.forward_multiple_cells
+                        else:
+                            fwd_call = self.biencoder.forward_multiple_cells
+                        q_dense, ctx_dense, cells_need_link = fwd_call(
+                            q_ids,
+                            q_segments,
+                            q_attn_mask,
+                            q_rep_pos,
+                            ctx_ids_batch,
+                            ctx_seg_batch,
+                            ctx_attn_mask,
+                            encoder_type=encoder_type,
+                            representation_token_pos=rep_positions,
+                        )
 
                 if q_dense is not None:
-                    q_represenations.extend(q_dense.cpu().split(1, dim=0))
-
+                    q_represenations.extend([qd.cpu() for qd in q_dense])
                 ctx_represenations.extend(ctx_dense.cpu().split(1, dim=0))
 
             batch_positive_idxs = biencoder_input.is_positive
             positive_idx_per_question.extend(
-                [total_ctxs + v for v in batch_positive_idxs]
+                [[total_ctxs + vv for vv in v] for v in batch_positive_idxs]
             )
 
             if (i + 1) % log_result_step == 0:
@@ -421,47 +454,45 @@ class BiEncoderTrainer(object):
                 )
 
         ctx_represenations = torch.cat(ctx_represenations, dim=0)
-        q_represenations = torch.cat(q_represenations, dim=0)
-
+        total_q_rep_size = sum([len(q_rep) for q_rep in q_represenations])
         logger.info(
-            "Av.rank validation: total q_vectors size=%s", q_represenations.size()
+            "Av.rank validation: total q_vectors size=%s", total_q_rep_size
         )
         logger.info(
             "Av.rank validation: total ctx_vectors size=%s", ctx_represenations.size()
         )
 
-        q_num = q_represenations.size(0)
+        q_num = len(q_represenations)
         assert q_num == len(positive_idx_per_question)
 
-        scores = sim_score_f(q_represenations, ctx_represenations)
-        values, indices = torch.sort(scores, dim=1, descending=True)
-
-        rank = 0
-        ranks_for_debug = []
-        for i, idx in enumerate(positive_idx_per_question):
-            # aggregate the rank of the known gold passage in the sorted results for each question
-            gold_idx = (indices[i] == idx).nonzero()
-            rank += gold_idx.item()
-            ranks_for_debug.append(gold_idx.item())
-        import json
-        with open(os.path.join(cfg.output_dir, f"rank{cfg.local_rank}.json" ), 'w') as fout:
-            json.dump(ranks_for_debug, fout, indent=4)
+        total_hits_top1 = 0
+        total_positives = 0
+        for i, pos_idx in enumerate(positive_idx_per_question):
+            scores = sim_score_f(q_represenations[i], ctx_represenations)
+            values, indices = torch.sort(scores, dim=1, descending=True)
+            total_positives += len(pos_idx)
+            retrieved_pids = [full_pid_tensors[v] for v in indices[:, 0]]
+            gold_pids = [full_pid_tensors[v] for v in pos_idx]
+            hits_top1 = [idx for idx in gold_pids if idx in retrieved_pids]
+            total_hits_top1 += len(hits_top1)
 
         if distributed_factor > 1:
             # each node calcuated its own rank, exchange the information between node and calculate the "global" average rank
             # NOTE: the set of passages is still unique for every node
-            eval_stats = all_gather_list([rank, q_num], max_size=100)
+            eval_stats = all_gather_list([q_num, total_hits_top1, total_positives], max_size=100)
             for i, item in enumerate(eval_stats):
-                remote_rank, remote_q_num = item
+                remote_q_num, remote_hits_top1, remote_positives = item
                 if i != cfg.local_rank:
-                    rank += remote_rank
                     q_num += remote_q_num
+                    total_hits_top1 += remote_hits_top1
+                    total_positives += remote_positives
 
-        av_rank = float(rank / q_num)
-        logger.info(
-            "Av.rank validation: average rank %s, total questions=%d", av_rank, q_num
+        retriever_recall = float(total_hits_top1 / total_positives)
+        logger.info( 
+            "Av.rank validation: recall for all positives %s total questions=%d", retriever_recall, q_num
         )
-        return av_rank
+        # We return negative because we pick the best checkpoint based on min
+        return -retriever_recall
 
     def _train_epoch(
         self,
@@ -474,6 +505,8 @@ class BiEncoderTrainer(object):
         cfg = self.cfg
         rolling_train_loss = 0.0
         epoch_loss = 0
+        epoch_grounding_loss = 0
+        rolling_train_grounding_loss = 0.0
         epoch_correct_predictions = 0
 
         log_result_step = cfg.train.log_batch_step
@@ -501,7 +534,7 @@ class BiEncoderTrainer(object):
             data_iteration = train_data_iterator.get_iteration()
             random.seed(seed + epoch + data_iteration)
 
-            biencoder_batch = BiEncoder.create_biencoder_input2(
+            biencoder_batch = BiEncoderTableLink.create_biencoder_input_use_cell(
                 samples_batch,
                 self.tensorizer,
                 True,
@@ -509,7 +542,7 @@ class BiEncoderTrainer(object):
                 num_other_negatives,
                 shuffle=True,
                 shuffle_positives=shuffle_positives,
-                query_token=special_token,
+                query_token=special_token, epoch=epoch, label_question=cfg.label_question
             )
 
             # get the token to be used for representation selection
@@ -524,7 +557,7 @@ class BiEncoderTrainer(object):
             loss_scale = (
                 cfg.loss_scale_factors[dataset] if cfg.loss_scale_factors else None
             )
-            loss, correct_cnt = _do_biencoder_fwd_pass(
+            loss, correct_cnt, grounding_loss = _do_biencoder_fwd_pass(
                 self.biencoder,
                 biencoder_batch,
                 self.tensorizer,
@@ -535,24 +568,19 @@ class BiEncoderTrainer(object):
             )
 
             epoch_correct_predictions += correct_cnt
-            epoch_loss += loss.item()
-            rolling_train_loss += loss.item()
-
-            if cfg.fp16:
-                from apex import amp
-
-                with amp.scale_loss(loss, self.optimizer) as scaled_loss:
-                    scaled_loss.backward()
-                if cfg.train.max_grad_norm > 0:
-                    torch.nn.utils.clip_grad_norm_(
-                        amp.master_params(self.optimizer), cfg.train.max_grad_norm
-                    )
-            else:
-                loss.backward()
-                if cfg.train.max_grad_norm > 0:
-                    torch.nn.utils.clip_grad_norm_(
-                        self.biencoder.parameters(), cfg.train.max_grad_norm
-                    )
+            if loss is not None:
+                epoch_loss += loss.item()
+                rolling_train_loss += loss.item()
+            if grounding_loss is not None:
+                epoch_grounding_loss += grounding_loss.item()
+                rolling_train_grounding_loss += grounding_loss.item()
+                assert not loss    
+                loss = grounding_loss
+            loss.backward()
+            if cfg.train.max_grad_norm > 0:
+                torch.nn.utils.clip_grad_norm_(
+                    self.biencoder.parameters(), cfg.train.max_grad_norm
+                )
 
             if (i + 1) % cfg.train.gradient_accumulation_steps == 0:
                 self.optimizer.step()
@@ -573,14 +601,17 @@ class BiEncoderTrainer(object):
             if (i + 1) % rolling_loss_step == 0:
                 logger.info("Train batch %d", data_iteration)
                 latest_rolling_train_av_loss = rolling_train_loss / rolling_loss_step
+                latest_rolling_train_av_cell_loss = rolling_train_grounding_loss / rolling_loss_step
                 logger.info(
-                    "Avg. loss per last %d batches: %f",
+                    "Avg. loss per last %d batches: %f grounding loss: %f",
                     rolling_loss_step,
                     latest_rolling_train_av_loss,
+                    latest_rolling_train_av_cell_loss
                 )
                 rolling_train_loss = 0.0
+                rolling_train_grounding_loss = 0.0
 
-            if data_iteration % eval_step == 0:
+            if data_iteration % eval_step == 0 and cfg.train.eval_per_epoch != 1:
                 logger.info(
                     "rank=%d, Validation: Epoch: %d Step: %d/%d",
                     cfg.local_rank,
@@ -597,7 +628,8 @@ class BiEncoderTrainer(object):
         self.validate_and_save(epoch, data_iteration, scheduler)
 
         epoch_loss = (epoch_loss / epoch_batches) if epoch_batches > 0 else 0
-        logger.info("Av Loss per epoch=%f", epoch_loss)
+        epoch_grounding_loss = (epoch_grounding_loss / epoch_batches) if epoch_batches > 0 else 0
+        logger.info("Av Loss per epoch=%f grounding loss=%f", epoch_loss, epoch_grounding_loss)
         logger.info("epoch total correct predictions=%d", epoch_correct_predictions)
 
     def _save_checkpoint(self, scheduler, epoch: int, offset: int) -> str:
@@ -652,9 +684,11 @@ def _calc_loss(
     loss_function,
     local_q_vector,
     local_ctx_vectors,
+    local_pid_tensors,
     local_positive_idxs,
     local_hard_negatives_idxs: list = None,
     loss_scale: float = None,
+    local_cells_need_link=None, local_q_labels=None,
 ) -> Tuple[T, bool]:
     """
     Calculates In-batch negatives schema loss and supports to run it in DDP mode by exchanging the representations
@@ -668,11 +702,11 @@ def _calc_loss(
         ctx_vector_to_send = (
             torch.empty_like(local_ctx_vectors).cpu().copy_(local_ctx_vectors).detach_()
         )
-
         global_question_ctx_vectors = all_gather_list(
             [
                 q_vector_to_send,
                 ctx_vector_to_send,
+                local_pid_tensors,
                 local_positive_idxs,
                 local_hard_negatives_idxs,
             ],
@@ -681,19 +715,18 @@ def _calc_loss(
 
         global_q_vector = []
         global_ctxs_vector = []
-
-        # ctxs_per_question = local_ctx_vectors.size(0)
+        global_pid_tensors = []
         positive_idx_per_question = []
         hard_negatives_per_question = []
 
         total_ctxs = 0
 
         for i, item in enumerate(global_question_ctx_vectors):
-            q_vector, ctx_vectors, positive_idx, hard_negatives_idxs = item
-
+            q_vector, ctx_vectors, pid_tensors, positive_idx, hard_negatives_idxs = item
             if i != cfg.local_rank:
                 global_q_vector.append(q_vector.to(local_q_vector.device))
                 global_ctxs_vector.append(ctx_vectors.to(local_q_vector.device))
+                global_pid_tensors.append(pid_tensors.to(local_q_vector.device))
                 positive_idx_per_question.extend([v + total_ctxs for v in positive_idx])
                 hard_negatives_per_question.extend(
                     [[v + total_ctxs for v in l] for l in hard_negatives_idxs]
@@ -701,6 +734,7 @@ def _calc_loss(
             else:
                 global_q_vector.append(local_q_vector)
                 global_ctxs_vector.append(local_ctx_vectors)
+                global_pid_tensors.append(local_pid_tensors)
                 positive_idx_per_question.extend(
                     [v + total_ctxs for v in local_positive_idxs]
                 )
@@ -710,22 +744,29 @@ def _calc_loss(
             total_ctxs += ctx_vectors.size(0)
         global_q_vector = torch.cat(global_q_vector, dim=0)
         global_ctxs_vector = torch.cat(global_ctxs_vector, dim=0)
+        global_pid_tensors = torch.cat(global_pid_tensors, dim=0)
+        assert not local_cells_need_link   # for span proposal, we only train with one GPU
+        assert not local_q_labels
 
     else:
         global_q_vector = local_q_vector
         global_ctxs_vector = local_ctx_vectors
+        global_pid_tensors = local_pid_tensors
         positive_idx_per_question = local_positive_idxs
         hard_negatives_per_question = local_hard_negatives_idxs
+        global_cells_need_link = local_cells_need_link
+        global_q_labels = local_q_labels
 
-    loss, is_correct = loss_function.calc(
+    loss, is_correct, grounding_loss = loss_function.calc(
         global_q_vector,
         global_ctxs_vector,
+        global_pid_tensors,
         positive_idx_per_question,
         hard_negatives_per_question,
-        loss_scale=loss_scale,
+        loss_scale=loss_scale, cells_need_link=global_cells_need_link, q_labels=global_q_labels, label_question=cfg.label_question
     )
 
-    return loss, is_correct
+    return loss, is_correct, grounding_loss, global_cells_need_link, global_q_labels
 
 
 def _do_biencoder_fwd_pass(
@@ -739,55 +780,73 @@ def _do_biencoder_fwd_pass(
 ) -> Tuple[torch.Tensor, int]:
 
     input = BiEncoderBatch(**move_to_device(input._asdict(), cfg.device)) # This is only used to handle single-gpu case
-
     q_attn_mask = tensorizer.get_attn_mask(input.question_ids)
-    ctx_attn_mask = tensorizer.get_attn_mask(input.context_ids)
+    if input.context_ids is not None:
+        ctx_attn_mask = tensorizer.get_attn_mask(input.context_ids)
+    else:
+        ctx_attn_mask = None
 
     if model.training:
-        model_out = model(
-            input.question_ids,
-            input.question_segments,
-            q_attn_mask,
-            input.context_ids,
-            input.ctx_segments,
-            ctx_attn_mask,
-            encoder_type=encoder_type,
-            representation_token_pos=rep_positions,
-        )
-    else:
-        with torch.no_grad():
+        with autocast():
             model_out = model(
                 input.question_ids,
                 input.question_segments,
                 q_attn_mask,
+                input.question_rep_pos,
+                input.pid_tensors,
                 input.context_ids,
                 input.ctx_segments,
                 ctx_attn_mask,
                 encoder_type=encoder_type,
                 representation_token_pos=rep_positions,
             )
+    else:
+        with torch.no_grad():
+            with autocast():
+                model_out = model(
+                    input.question_ids,
+                    input.question_segments,
+                    q_attn_mask,
+                    input.question_rep_pos,
+                    input.pid_tensors,
+                    input.context_ids,
+                    input.ctx_segments,
+                    ctx_attn_mask,
+                    encoder_type=encoder_type,
+                    representation_token_pos=rep_positions,
+                )
 
-    local_q_vector, local_ctx_vectors = model_out
+    local_q_vector, local_ctx_vectors, local_pid_tensors, local_cells_need_link = model_out
 
     loss_function = BiEncoderNllLoss()
 
-    loss, is_correct = _calc_loss(
+    loss, is_correct, grounding_loss, global_cell_needs_link, global_q_labels = _calc_loss(
         cfg,
         loss_function,
         local_q_vector,
         local_ctx_vectors,
+        local_pid_tensors,
         input.is_positive,
         input.hard_negatives,
         loss_scale=loss_scale,
+        local_cells_need_link=local_cells_need_link,
+        local_q_labels=input.question_labels,
     )
-
-    is_correct = is_correct.sum().item()
+    if is_correct:
+        is_correct = is_correct.sum().item()
+    else:
+        is_correct = 0
 
     if cfg.n_gpu > 1:
         loss = loss.mean()
+        grounding_loss = grounding_loss.mean()
     if cfg.train.gradient_accumulation_steps > 1:
         loss = loss / cfg.train.gradient_accumulation_steps
-    return loss, is_correct
+        grounding_loss = grounding_loss / cfg.train.gradient_accumulation_steps
+    if model.training:
+        return loss, is_correct, grounding_loss
+    else:
+        return loss, is_correct, grounding_loss, global_cell_needs_link, global_q_labels
 
 
 @hydra.main(config_path="conf", config_name="biencoder_train_cfg")
@@ -818,7 +877,7 @@ def main(cfg: DictConfig):
             "No train files are specified. Run 2 types of validation for specified model file"
         )
         trainer.validate_nll()
-        trainer.validate_average_rank()
+        trainer.validate_average_rank_use_cell()
     else:
         logger.warning(
             "Neither train_file or (model_file & dev_file) parameters are specified. Nothing to do."
@@ -836,5 +895,4 @@ if __name__ == "__main__":
             hydra_formatted_args.append(arg)
     logger.info("Hydra formatted Sys.argv: %s", hydra_formatted_args)
     sys.argv = hydra_formatted_args
-
     main()

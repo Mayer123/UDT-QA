@@ -84,3 +84,31 @@ webq_train_dpr_v_all_index:
 webq_dev_v_all_index:
   _target_: dpr.data.biencoder_data.JsonQADataset
   file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/retriever/webq-dev_text_table_kb_pos_dpr_neg_v_index_all.json
+
+##### CORE DATA ##### 
+# Gold table chunks as positives, negatives mined with BM25 on table-only index
+ott_retriever_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_train_q_to_tables_with_bm25neg.json
+
+# Gold table chunks as positives, negatives mined with BM25 on table-only index
+ott_retriever_dev:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_dev_q_to_tables_with_bm25neg.json
+
+# Gold table chunks as positives, negatives mined with BM25 on table-only index
+# This data is very similar to nq_train_raw_tab_bm25, except that we added passage_id field and regenerated pos/neg by taking rows sequentially
+# The nq_train_raw_tab_bm25 version has rows randomly sampled from tables
+nq_retriever_table_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/train_NQ_q_to_tables_with_bm25neg_merged1.json
+
+# Gold linked passage as positives, negatives mined with BM25 on ott passages index
+ott_linker_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_table_linker_train_with_bm25neg.json
+
+# Gold linked passage as positives, negatives mined with BM25 on ott passages index
+ott_linker_dev:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_table_linker_dev_with_bm25neg.json
