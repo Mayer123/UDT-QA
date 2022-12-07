@@ -20,7 +20,8 @@ For NQ, we use the same knowledge sources as in UDT-QA raw setting ([text](https
 
 To run retriever inference on OTT-QA (the qa_dataset files are the same ones as used to train the retriever or test.blind.json)
 ```
-CUDA_VISIBLE_DEVICES=0 python dense_retrieve_link.py model_file=core_joint_retriever.ckpt encoded_ctx_files=[download_dir/ott_tables_original*] qa_dataset=/home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_dev_q_to_tables_with_bm25neg.json do_retrieve=True
+CUDA_VISIBLE_DEVICES=0 python dense_retrieve_link.py model_file=core_joint_retriever.ckpt encoded_ctx_files=[download_dir/ott_tables_original*] \
+qa_dataset=/home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_dev_q_to_tables_with_bm25neg.json do_retrieve=True
 ```
 Because OTT-QA index is mucher smaller than NQ, thus we can it on one GPU. To run retriever inference on NQ (cpu-only), please follow the instructions of UDT-QA. 
 
@@ -29,7 +30,9 @@ If you would like to train your own retriever model, you can download the retrie
 
 To train the OTT-QA and NQ joint retriever,
 ```
-python -m torch.distributed.launch --nproc_per_node=2 train_dense_encoder_core.py train=biencoder_nq train_datasets=[nq_train_bm25,  nq_retriever_table_train,ott_retriever_train] dev_datasets=[ott_retriever_dev] train.batch_size=64 global_loss_buf_sz=1184000 output_dir=your_output_dir checkpoint_file_name=dpr_biencoder
+python -m torch.distributed.launch --nproc_per_node=2 train_dense_encoder_core.py train=biencoder_nq \
+train_datasets=[nq_train_bm25,  nq_retriever_table_train,ott_retriever_train] dev_datasets=[ott_retriever_dev] \
+train.batch_size=64 global_loss_buf_sz=1184000 output_dir=your_output_dir checkpoint_file_name=dpr_biencoder
 ```
 After training is done, you can generate embeddings for the knowledge sources using the following command (for ctx_src, use ott_table for OTT-QA and dpr_wiki+raw_table for NQ)
 ```
@@ -45,17 +48,23 @@ Note that we have generated links for all tables in the OTT-QA dataset, but for 
 If you would like to run linker inference yourself, we also provide the trained span proposal model and linking model, you can download them with the resource key: core.model.linker
 To run linker inference on OTT-QA, first run span proposal model then run linking model 
 ```
-CUDA_VISIBLE_DEVICES=0 python dense_retrieve_link.py model_file=core_span_proposal.ckpt qa_dataset=download_dir/ott_table_chunks_original.json do_span=True label_question=True 
+CUDA_VISIBLE_DEVICES=0 python dense_retrieve_link.py model_file=core_span_proposal.ckpt \
+qa_dataset=download_dir/ott_table_chunks_original.json do_span=True label_question=True 
 
-CUDA_VISIBLE_DEVICES=0 python dense_retrieve_link.py model_file=core_table_linker.ckpt encoded_ctx_files=[download_dir/ott_wiki*] qa_dataset=download_dir/all_table_chunks_span_prediction.json do_link=True
+CUDA_VISIBLE_DEVICES=0 python dense_retrieve_link.py model_file=core_table_linker.ckpt encoded_ctx_files=[download_dir/ott_wiki*] \
+qa_dataset=download_dir/all_table_chunks_span_prediction.json do_link=True
 ```
 
 ## Training your own linker
 If you would like to train your own linker, we also release the linker training data (resource key: core.data.linker). To train the linker, you will need to seperately train the span proposal model and the linking model. 
 ```
-CUDA_VISIBLE_DEVICES=0 python train_table_linker.py train=biencoder_nq train_datasets=[ott_linker_train] dev_datasets=[ott_linker_dev] train.batch_size=64 global_loss_buf_sz=1184000 output_dir=your_output_dir_span_proposal checkpoint_file_name=dpr_biencoder encoder.encoder_model_type=hf_table_link label_question=True
+CUDA_VISIBLE_DEVICES=0 python train_table_linker.py train=biencoder_nq train_datasets=[ott_linker_train] dev_datasets=[ott_linker_dev] \
+train.batch_size=64 global_loss_buf_sz=1184000 output_dir=your_output_dir_span_proposal checkpoint_file_name=dpr_biencoder \
+encoder.encoder_model_type=hf_table_link label_question=True
 
-CUDA_VISIBLE_DEVICES=0 python train_table_linker.py train=biencoder_nq train_datasets=[ott_linker_train] dev_datasets=[ott_linker_dev] train.batch_size=64 global_loss_buf_sz=1184000 output_dir=your_output_dir_linking checkpoint_file_name=dpr_biencoder train.num_train_epochs=100 encoder.encoder_model_type=hf_table_link
+CUDA_VISIBLE_DEVICES=0 python train_table_linker.py train=biencoder_nq train_datasets=[ott_linker_train] dev_datasets=[ott_linker_dev] \
+train.batch_size=64 global_loss_buf_sz=1184000 output_dir=your_output_dir_linking checkpoint_file_name=dpr_biencoder \
+train.num_train_epochs=100 encoder.encoder_model_type=hf_table_link
 ```
 After the training is finished, you can generate embeddings in the same way as retriever. 
 

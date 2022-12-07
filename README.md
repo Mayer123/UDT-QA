@@ -1,6 +1,7 @@
 # Update
 
-**\*\*\*\*\* Adding code for [CORE](https://github.com/Mayer123/UDT-QA/README_CORE.md) \*\*\*\*\***
+**\*\*\*\*\* Adding code for [CORE](https://github.com/Mayer123/UDT-QA/blob/main/README_CORE.md) \*\*\*\*\***
+
 The code and data for the paper "Open-domain Question Answering via Chain of Reasoning over Heterogeneous Knowledge" (Findings of EMNLP 2022) is added. See full paper [here](https://arxiv.org/abs/2210.12338)
 
 # Open Domain Question Answering with A Unified Knowledge Interface
