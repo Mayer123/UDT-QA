@@ -17,3 +17,13 @@ verbalized_kb:
   _target_: dpr.data.retriever_data.CsvCtxSrc
   file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/kb/verbalized_WD_graphs_for_index.tsv
   id_prefix: 'kelm-v3:'
+
+ott_table:
+  _target_: dpr.data.retriever_data.MyJsonlTablesCtxSrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_table_chunks_original.json
+  id_prefix: 'ott-original:'
+
+ott_wiki_passages:
+  _target_: dpr.data.retriever_data.MyJsonlTablesCtxSrc
+  file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_wiki_passages.json
+  id_prefix: 'ott-wiki:'

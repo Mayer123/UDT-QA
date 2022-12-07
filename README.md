@@ -1,3 +1,8 @@
+# Update
+
+**\*\*\*\*\* Adding code for [CORE](https://github.com/Mayer123/UDT-QA/README_CORE.md) \*\*\*\*\***
+The code and data for the paper "Open-domain Question Answering via Chain of Reasoning over Heterogeneous Knowledge" (Findings of EMNLP 2022) is added. See full paper [here](https://arxiv.org/abs/2210.12338)
+
 # Open Domain Question Answering with A Unified Knowledge Interface
 This repository contains the code and data for the paper "Open Domain Question Answering with A Unified Knowledge Interface" (ACL 2022). See full paper [here](https://arxiv.org/abs/2110.08417)
 
@@ -110,5 +115,14 @@ Stay tuned for the official implementation of [UnitedQA](https://github.com/micr
     url = "https://aclanthology.org/2022.acl-long.113",
     doi = "10.18653/v1/2022.acl-long.113",
     pages = "1605--1620",
+}
+
+@misc{ma2022opendomain,
+    title={Open-domain Question Answering via Chain of Reasoning over Heterogeneous Knowledge},
+    author={Kaixin Ma and Hao Cheng and Xiaodong Liu and Eric Nyberg and Jianfeng Gao},
+    year={2022},
+    eprint={2210.12338},
+    archivePrefix={arXiv},
+    primaryClass={cs.CL}
 }
 ```

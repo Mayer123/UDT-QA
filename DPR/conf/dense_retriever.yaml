@@ -31,6 +31,9 @@ validation_workers: 16
 # Batch size to generate query embeddings
 batch_size: 128
 
+num_shards: 1
+shard_id: 0
+
 # Whether to lower case the input text. Set True for uncased models, False for the cased ones.
 do_lower_case: True
 
@@ -45,9 +48,14 @@ encoder_path:
 index_path:
 
 kilt_out_file:
-
+table_chunk_file:
+label_question: False
 # A trained bi-encoder checkpoint file to initialize the model
 model_file:
+
+do_retrieve: False 
+do_link: False 
+do_span: False
 
 validate_as_tables: False
 rpc_retriever_cfg_file:

@@ -91,6 +91,79 @@ RESOURCES_MAP = {
                  [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/models/retriever/nq_with_all_tables_and_kb_verbalized/encoded_index/verbalized_kb_shard{i}.pkl" for i in range(4)],
         "desc": "Retriever trained on NQ with text+verbalized tables+verbalized kb and encoded knowledge sources",
     },
+    "core.model.retriever": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/models/core_joint_retriever.ckpt"] +
+                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever/encoded_ctx/dpr_wiki_shard{i}_gpu0" for i in range(4)] +
+                 ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever/encoded_ctx/dpr_wiki_shard2_gpu1",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever/encoded_ctx/ott_tables_original_shard0_gpu0",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever/encoded_ctx/udtqa_tables_shard1_gpu0",],
+        "desc": "Joint Retriever trained on NQ and OTT-QA and encoded knowledge sources",
+    },
+    "core.data.retriever": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever/OTT-QA/ott_train_q_to_tables_with_bm25neg.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever/OTT-QA/ott_dev_q_to_tables_with_bm25neg.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever/NQ/train_NQ_q_to_tables_with_bm25neg_merged1.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever/OTT-QA/test.blind.json"],
+        "desc": "Joint Retriever training data and ott test inference data",
+    },
+    "core.data.retriever_ott_results": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever_results/OTT-QA/train_hop1_retrieved_results.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever_results/OTT-QA/dev_hop1_retrieved_results.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever_results/OTT-QA/test_hop1_retrieved_results.json"],
+        "desc": "Joint Retriever ott results",
+    },
+    "core.data.retriever_nq_results": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever_results/NQ/nq_full_train.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever_results/NQ/nq_full_dev.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/CORE/data/retriever_results/NQ/nq_full_test.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/retriever_results/NQ/nq_table_answerable_train_fullindex.json"],
+        "desc": "Joint Retriever nq results",
+    },
+    "core.model.linker": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/models/core_span_proposal.ckpt",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/models/core_table_linker.ckpt",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/linker/OTT-QA/ott_wiki_text_shard0_gpu0",],
+        "desc": "Linker model trained on OTT-QA dataset and encoded OTT wiki passages",
+    },
+    "core.data.linker": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/linker/ott_table_linker_dev_with_bm25neg.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/linker/ott_table_linker_train_with_bm25neg.json",],
+        "desc": "Linker training data",
+    },
+    "core.data.linker_ott_results": {
+        "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/linker/OTT-QA/table_chunks_to_passages_shard{i}_of_10.json"
+                 for i in range(10)],
+        "desc": "Linking results on OTT-QA table sets",
+    },
+    "core.data.linker_nq_results": {
+        "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/linker/NQ/nq_table_chunks_to_passages_shard{i}.json" for i in range(2)],
+        "desc": "Linking results on NQ table sets",
+    },
+    "core.model.reader": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/models/reader/pytorch_model.bin",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/models/reader/config.json"],
+        "desc": "Reader model trained on OTT-QA and NQ dataset",
+    },
+    "core.data.reader_ott": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/reader/OTT-QA/ott_train_reader.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/reader/OTT-QA/ott_dev_reader.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/reader/OTT-QA/ott_test_reader.json"],
+        "desc": "Reader data for OTT-QA dataset",
+    },
+    "core.data.reader_nq": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/reader/NQ/nq_merged_train_reader.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/reader/NQ/nq_dev_reader.json",
+                 "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/reader/NQ/nq_test_reader.json"],
+        "desc": "Reader data for NQ dataset",
+    },
+    "core.data.chainer_ott_cache": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/chainer/aggregated_ott_score_cache.json"],
+        "desc": "Chainer score cache for OTT-QA dataset",
+    },
+    "core.data.chainer_nq_cache": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/chainer/aggregated_NQ_score_cache.json"],
+        "desc": "Chainer score cache for NQ dataset",
+    },
 }
 
 def download_resource(link: str, resource_key: str, out_dir: str):
