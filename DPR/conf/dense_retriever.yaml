@@ -33,6 +33,15 @@ batch_size: 128
 
 num_shards: 1
 shard_id: 0
+hop1_limit: 200
+hop1_keep: 30
+hop2_limit: 50
+do_retrieve: False
+do_link: False 
+do_span: False
+do_cos: False
+hop2_expert: 4
+mean_pool: False
 
 # Whether to lower case the input text. Set True for uncased models, False for the cased ones.
 do_lower_case: True
@@ -52,10 +61,6 @@ table_chunk_file:
 label_question: False
 # A trained bi-encoder checkpoint file to initialize the model
 model_file:
-
-do_retrieve: False 
-do_link: False 
-do_span: False
 
 validate_as_tables: False
 rpc_retriever_cfg_file:

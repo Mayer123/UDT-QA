@@ -3,6 +3,7 @@
 # model type. One of [hf_bert, pytext_bert, fairseq_roberta]
 encoder_model_type: hf_any
 
+share_encoder: True
 # HuggingFace's config name for model initialization
 pretrained_model_cfg: bert-base-uncased
 
@@ -19,6 +20,12 @@ dropout: 0.1
 
 # whether to fix (don't update) context encoder during training or not
 fix_ctx_encoder: False
+
+use_moe: True 
+num_expert: 6
+use_infer_expert: False
+per_layer_gating: False
+moe_type: mod2:attn
 
 # if False, the model won't load pre-trained BERT weights
 pretrained: True

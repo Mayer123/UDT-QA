@@ -27,3 +27,8 @@ ott_wiki_passages:
   _target_: dpr.data.retriever_data.MyJsonlTablesCtxSrc
   file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_wiki_passages.json
   id_prefix: 'ott-wiki:'
+
+dpr_wiki_tmp:
+  _target_: dpr.data.retriever_data.CsvCtxSrc
+  file: /home/v-kaixinma/psgs_w100.tsv
+  id_prefix: 'wiki:'

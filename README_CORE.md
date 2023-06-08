@@ -79,13 +79,20 @@ We provide the joint reader model trained on OTT-QA and NQ dataset (resource key
 
 ## Cite 
 ```
-@misc{ma2022opendomain,
-    title={Open-domain Question Answering via Chain of Reasoning over Heterogeneous Knowledge},
-    author={Kaixin Ma and Hao Cheng and Xiaodong Liu and Eric Nyberg and Jianfeng Gao},
-    year={2022},
-    eprint={2210.12338},
-    archivePrefix={arXiv},
-    primaryClass={cs.CL}
+@inproceedings{ma-etal-2022-open-domain,
+    title = "Open-domain Question Answering via Chain of Reasoning over Heterogeneous Knowledge",
+    author = "Ma, Kaixin  and
+      Cheng, Hao  and
+      Liu, Xiaodong  and
+      Nyberg, Eric  and
+      Gao, Jianfeng",
+    booktitle = "Findings of the Association for Computational Linguistics: EMNLP 2022",
+    month = dec,
+    year = "2022",
+    address = "Abu Dhabi, United Arab Emirates",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.findings-emnlp.392",
+    pages = "5360--5374",
 }
 
 @inproceedings{ma-etal-2022-open,

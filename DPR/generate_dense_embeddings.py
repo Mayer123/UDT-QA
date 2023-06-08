@@ -37,13 +37,17 @@ from dpr.utils.model_utils import (
 logger = logging.getLogger()
 setup_logger(logger)
 
+def mean_pooling(token_embeddings, mask):
+    token_embeddings = token_embeddings.masked_fill(~mask[..., None].bool(), 0.)
+    sentence_embeddings = token_embeddings.sum(dim=1) / mask.sum(dim=1)[..., None]
+    return sentence_embeddings
 
 def gen_ctx_vectors(
     cfg: DictConfig,
     ctx_rows: List[Tuple[object, BiEncoderPassage]],
     model: nn.Module,
     tensorizer: Tensorizer,
-    insert_title: bool = True,
+    insert_title: bool = True, expert_id=None
 ) -> List[Tuple[object, np.array]]:
     n = len(ctx_rows)
     bsz = cfg.batch_size
@@ -66,7 +70,14 @@ def gen_ctx_vectors(
             tensorizer.get_attn_mask(ctx_ids_batch), cfg.device
         )
         with torch.no_grad():
-            _, out, _ = model(ctx_ids_batch, ctx_seg_batch, ctx_attn_mask)
+            if expert_id is None:
+                outputs = model(ctx_ids_batch, ctx_seg_batch, ctx_attn_mask)
+            else:
+                outputs = model(ctx_ids_batch, ctx_seg_batch, ctx_attn_mask, expert_id=expert_id)
+            if cfg.mean_pool:
+                out = mean_pooling(outputs[0], ctx_attn_mask)
+            else:
+                out = outputs[1]
         out = out.cpu()
 
         ctx_ids = [r[0] for r in batch]
@@ -106,13 +117,20 @@ def main(cfg: DictConfig):
     saved_state = load_states_from_checkpoint(cfg.model_file)
     set_cfg_params_from_state(saved_state.encoder_params, cfg)
 
+    if cfg.encoder.pretrained_file is not None:
+        print ('setting pretrained file to None', cfg.encoder.pretrained_file)
+        cfg.encoder.pretrained_file = None
+    if cfg.model_file:
+        print ('Since we are loading from a model file, setting pretrained model cfg to bert', cfg.encoder.pretrained_model_cfg)
+        cfg.encoder.pretrained_model_cfg = 'bert-base-uncased'
+
     logger.info("CFG:")
     logger.info("%s", OmegaConf.to_yaml(cfg))
 
     tensorizer, encoder, _ = init_biencoder_components(
         cfg.encoder.encoder_model_type, cfg, inference_only=True
     )
-
+    print (cfg.encoder.encoder_model_type)
     encoder = encoder.ctx_model if cfg.encoder_type == "ctx" else encoder.question_model
 
     encoder, _ = setup_for_distributed_mode(
@@ -137,6 +155,13 @@ def main(cfg: DictConfig):
         for (key, value) in saved_state.model_dict.items()
         if key.startswith("ctx_model.")
     }
+    if 'encoder.embeddings.position_ids' in ctx_state:
+        if 'encoder.embeddings.position_ids' not in model_to_load.state_dict():
+            print ('deleting position ids', ctx_state['encoder.embeddings.position_ids'].shape)
+            del ctx_state['encoder.embeddings.position_ids']
+    else:
+        if 'encoder.embeddings.position_ids' in model_to_load.state_dict():
+            ctx_state['encoder.embeddings.position_ids'] = model_to_load.state_dict()['encoder.embeddings.position_ids']
     model_to_load.load_state_dict(ctx_state)
 
     logger.info("reading data source: %s", cfg.ctx_src)
@@ -174,7 +199,19 @@ def main(cfg: DictConfig):
         )
         gpu_passages = shard_passages[gpu_start:gpu_end]
 
-    data = gen_ctx_vectors(cfg, gpu_passages, encoder, tensorizer, True)
+    expert_id = None
+    if cfg.encoder.use_moe:
+        # TODO(chenghao): Fix this.
+        if cfg.target_expert != -1:
+            expert_id = int(cfg.target_expert)
+            logger.info("Setting expert_id=%s", expert_id)
+        else:
+            logger.info("Default mode, Setting expert_id=1")
+            expert_id = 1
+    if cfg.mean_pool:
+        logger.info("Using mean pooling for sentence embeddings")
+
+    data = gen_ctx_vectors(cfg, gpu_passages, encoder, tensorizer, True, expert_id=expert_id)
     if gpu_id == -1:
         file = cfg.out_file + "_" + str(cfg.shard_id)
     else:

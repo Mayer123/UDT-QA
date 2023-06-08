@@ -23,6 +23,11 @@ full_pos: False
 epoch_rolling: False
 loss_mask: True
 label_question: False
+use_cls: False 
+do_rerank: True
+do_span: True
+span_ratio: 0.2
+mean_pool: False
 
 # A trained bi-encoder checkpoint file to initialize the model
 model_file:

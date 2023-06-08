@@ -24,6 +24,12 @@ def init_hf_any_biencoder(args, **kwargs):
     from .hf_models import get_any_biencoder_components
     return get_any_biencoder_components(args, **kwargs)
 
+def init_hf_cos_biencoder(args, **kwargs):
+    if importlib.util.find_spec("transformers") is None:
+        raise RuntimeError('Please install transformers lib')
+    from .hf_models_cos import get_any_biencoder_components
+    return get_any_biencoder_components(args, **kwargs)
+
 def init_hf_table_link_biencoder(args, **kwargs):
     if importlib.util.find_spec("transformers") is None:
         raise RuntimeError('Please install transformers lib')
@@ -77,6 +83,7 @@ BIENCODER_INITIALIZERS = {
     'fairseq_roberta': init_fairseq_roberta_biencoder,
     'hf_any': init_hf_any_biencoder,
     'hf_table_link': init_hf_table_link_biencoder,
+    'hf_cos': init_hf_cos_biencoder,
 }
 
 READER_INITIALIZERS = {
