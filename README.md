@@ -1,3 +1,9 @@
+# Update 06/2023
+
+**\*\*\*\*\* Adding code for [COS](https://github.com/Mayer123/UDT-QA/blob/main/README_COS.md) \*\*\*\*\***
+
+The code and model for the paper "Chain-of-Skills: A Configurable Model for Open-domain Question Answering" (ACL 2023) is added. See full paper [here](https://arxiv.org/abs/2305.03130)
+
 # Update
 
 **\*\*\*\*\* Adding code for [CORE](https://github.com/Mayer123/UDT-QA/blob/main/README_CORE.md) \*\*\*\*\***

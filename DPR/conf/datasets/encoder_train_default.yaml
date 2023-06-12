@@ -115,91 +115,90 @@ ott_linker_dev:
 
 ##### COS DATA ##### 
 
-hotpot_train_iter2:
+hotpot_train_single:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_train_iter2.json
+  file: /path/to/hotpot_train_single_retrieval.json
 
-hotpot_dev_iter2:
+hotpot_dev_single:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_dev_iter2.json
+  file: /path/to/hotpot_dev_single_retrieval.json
 
-hotpot_train_hop2_iter2:
+hotpot_train_expanded:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_train_hop2_iter2.json
+  file: /path/to/hotpot_train_expanded_retrieval.json
 
-hotpot_dev_hop2_iter2:
+hotpot_dev_expanded:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_dev_hop2_iter2.json
+  file: /path/to/hotpot_dev_expanded_retrieval.json
 
-hotpot_train_rerank_iter2:
+hotpot_train_rerank:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_train_expert_reranker.json
+  file: /path/to/hotpot_train_rerank.json
 
-hotpot_dev_rerank_iter2:
+hotpot_dev_rerank:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_dev_expert_reranker.json
+  file: /path/to/hotpot_dev_rerank.json
 
-hotpot_link_train_iter2:
+hotpot_link_train:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_train_paras_link_iter2_reduced.json
+  file: /path/to/hotpot_train_paras_link.json
 
-hotpot_link_dev_iter2:
+hotpot_link_dev:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_dev_paras_link_iter2_reduced.json
+  file: /path/to/hotpot_dev_paras_link.json
 
-hotpot_question_link_train_iter2:
+hotpot_question_link_train:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_train_question_link_iter2_reduced.json
+  file: /path/to/hotpot_train_question_link.json
 
-hotpot_question_link_dev_iter2:
+hotpot_question_link_dev:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/HotpotQA/hotpot_retriever_linker_full_4experts/hotpot_dev_question_link_iter2_reduced.json
+  file: /path/to/hotpot_dev_question_link.json
 
-
-ott_hop1_train:
+ott_single_train:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/blobdata/OTT-QA/retriever_data/train_q_to_tables_with_bm25neg.json
+  file: /path/to/ott_train_single_retrieval.json
 
-ott_hop1_dev:
+ott_single_dev:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/blobdata/OTT-QA/retriever_data/dev_q_to_tables_with_bm25neg.json
+  file: /path/to/ott_dev_single_retrieval.json
 
-ott_hop2_train_iter2:
+ott_expanded_train:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/OTT-QA/biencoder_moe_encoder_n4_retriever_linker_rbhop2_80eps/train_q_tables_to_pasgs_row_based_iter2.json
+  file: /path/to/ott_train_expanded_retrieval.json
 
-ott_hop2_dev_iter2:
+ott_expanded_dev:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/OTT-QA/biencoder_moe_encoder_n4_retriever_linker_rbhop2_80eps/dev_q_tables_to_pasgs_row_based_iter2.json
+  file: /path/to/ott_dev_expanded_retrieval.json
 
-ott_link_train_iter2:
+ott_link_train:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/OTT-QA/biencoder_moe_encoder_n4_retriever_linker_rbhop2_80eps/train_linking_iter2_reduced.json
+  file: /path/to/ott_train_linking.json
 
-ott_link_dev_iter2:
+ott_link_dev:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/OTT-QA/biencoder_moe_encoder_n4_retriever_linker_rbhop2_80eps/dev_linking_iter2_reduced.json
+  file: /path/to/ott_dev_linking.json
 
-ott_rerank_train_iter2:
+ott_rerank_train:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/OTT-QA/biencoder_moe_encoder_n4_retriever_linker_rbhop2_80eps/train_rerank.json
+  file: /path/to/ott_train_rerank.json
 
-ott_rerank_dev_iter2:
+ott_rerank_dev:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/laketahoe_checkpoint/OTT-QA/biencoder_moe_encoder_n4_retriever_linker_rbhop2_80eps/dev_rerank.json
+  file: /path/to/ott_dev_rerank.json
 
-NQ_train_iter2:
+NQ_train:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/blobdata/NQ/taser_data/nq-train_text_pos_dpr_neg_raw_index_with_passage_id.json
+  file: /path/to/nq_train_single_retrieval.json
 
-NQ_train_table_iter2:
+NQ_train_table:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/blobdata/NQ/taser_data/nq-train_raw_table_pos_dpr_neg_with_passage_id.json
+  file: /path/to/nq_train_table_single_retrieval.json
 
-NQ_train_rerank_iter2_title:
+NQ_train_rerank:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/blobdata/NQ/taser_data/nq-train_text_pos_rerank_with_title.json
+  file: /path/to/nq_train_rerank.json
 
-NQ_train_table_rerank_iter2_title:
+NQ_train_table_rerank:
   _target_: dpr.data.biencoder_data.JsonQADataset
-  file: /home/v-kaixinma/blobdata/NQ/taser_data/nq-train_raw_table_pos_rerank_with_title.json
+  file: /path/to/nq_train_table_rerank.json

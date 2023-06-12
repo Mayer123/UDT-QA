@@ -20,7 +20,7 @@ from tqdm import tqdm
 from transformers import (AdamW, AutoConfig, AutoTokenizer, get_linear_schedule_with_warmup)
 from transformers import ElectraTokenizerFast
 import argparse
-from qa_dataset_hotpot import QADataset, qa_collate, QADatasetV2Eval, QADatasetV2, QADatasetV2Reader
+from qa_dataset_hotpot import qa_collate, QADatasetV2Eval, QADatasetV2, QADatasetV2Reader
 from qa_model import QAModelV2
 from train_qa_fie import AverageMeter, move_to_cuda, init_distributed_mode, average_main, get_layer_lrs, get_optimizer, load_saved, common_args
 import sys
@@ -141,9 +141,9 @@ def main():
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
         logger.info(f'Start training.... total number of steps: {t_total}')
         if args.is_main:
-            os.system("cp %s %s" % ('train_qa_v2.py', os.path.join(args.output_dir, 'train_qa_v2.py')))
+            os.system("cp %s %s" % ('train_qa_hotpot.py', os.path.join(args.output_dir, 'train_qa_hotpot.py')))
             os.system("cp %s %s" % ('qa_model.py', os.path.join(args.output_dir, 'qa_model.py')))
-            os.system("cp %s %s" % ('qa_dataset_v2.py', os.path.join(args.output_dir, 'qa_dataset_v2.py')))
+            os.system("cp %s %s" % ('qa_dataset_hotpot.py', os.path.join(args.output_dir, 'qa_dataset_hotpot.py')))
         while global_step < t_total:
             if args.verbose:
                 train_dataloader = tqdm(train_dataloader)

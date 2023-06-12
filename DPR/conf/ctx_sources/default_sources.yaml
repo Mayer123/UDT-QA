@@ -28,7 +28,7 @@ ott_wiki_passages:
   file: /home/kaixinm/kaixinm/UDT-QA/DPR/data/CORE/ott_wiki_passages.json
   id_prefix: 'ott-wiki:'
 
-dpr_wiki_tmp:
-  _target_: dpr.data.retriever_data.CsvCtxSrc
-  file: /home/v-kaixinma/psgs_w100.tsv
-  id_prefix: 'wiki:'
+wiki_hotpot:
+  _target_: dpr.data.retriever_data.MyJsonlTablesCtxSrc
+  file: /path/to/HotpotQA/hotpot_passage_for_index.json
+  id_prefix: 'hotpot-wiki:'

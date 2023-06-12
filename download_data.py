@@ -164,6 +164,106 @@ RESOURCES_MAP = {
         "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/chainer/aggregated_NQ_score_cache.json"],
         "desc": "Chainer score cache for NQ dataset",
     },
+    "cos.data.hotpot": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_train_single_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_train_expanded_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_train_paras_link.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_train_question_link.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_train_rerank.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_dev_single_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_dev_expanded_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_dev_paras_link.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_dev_question_link.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_dev_rerank.json"],
+        "desc": "COS data for HotpotQA",
+    },
+    "cos.data.ott": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/OTT-QA/ott_train_single_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/OTT-QA/ott_train_expanded_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/OTT-QA/ott_train_linking.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/OTT-QA/ott_train_rerank.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/OTT-QA/ott_dev_single_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/OTT-QA/ott_dev_expanded_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/OTT-QA/ott_dev_linking.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/OTT-QA/ott_dev_rerank.json",
+                  ],
+        "desc": "COS data for OTT-QA",
+    },
+    "cos.data.nq": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/NQ/nq_train_single_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/NQ/nq_train_table_single_retrieval.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/NQ/nq_train_rerank.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/NQ/nq_train_table_rerank.json",
+                  ],
+        "desc": "COS data for NQ",
+    },
+    "cos.reader.data.nq": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/NQ/nq_train_reader.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/NQ/nq_dev_reader.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/NQ/nq_test_reader.json",
+                  ],
+        "desc": "reader data for NQ",
+    },
+    "cos.reader.data.ott": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/OTT-QA/ott_train_reader.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/OTT-QA/ott_dev_reader.json",
+                  ],
+        "desc": "reader data for OTT-QA",
+    },
+    "cos.reader.data.hotpot": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/HotpotQA/hotpot_train_reader.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/HotpotQA/hotpot_dev_reader.json",
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/HotpotQA/hotpot_dev_reader_2hops.json",
+                  ],
+        "desc": "reader data for HotpotQA",
+    },
+    "cos.results.ott": {
+        "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/OTT-QA/table_chunks_to_passages_shard{i}_of_10.json" for i in range(10)] + ["https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/knowledge/ott_table_chunks_original.json"
+                  "https://msrdeeplearning.blob.core.windows.net/udq-qa/CORE/data/knowledge/ott_wiki_passages.json",],
+        "desc": "COS linking results for OTT-QA",
+    },
+    "cos.results.hotpot": {
+        "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/results/HotpotQA/hotpot_pasg_to_pasg_links{i}_shard0_of_1.json" for i in range(16)] + ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_corpus.jsonl",
+        "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/data/HotpotQA/hotpot_passage_for_index.json"],
+        "desc": "COS linking results for HotpotQA",
+    },
+    "cos.model": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/models/cos_nq_ott_hotpot_finetuned_6_experts.ckpt"],
+        "desc": "The COS model finetuned on NQ+HotpotQA+OTT-QA",
+    },
+    "cos.model.pretrained": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/models/cos_pretrained_4_experts.ckpt"],
+        "desc": "The COS model pretrained on Wikipedia",
+    },
+    "cos.model.reader.ott": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/models/ott_fie_checkpoint_best.pt"],
+        "desc": "The FiE reader model finetuned on OTT-QA",
+    },
+    "cos.model.reader.nq": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/models/nq_fie_checkpoint_best.pt"],
+        "desc": "The FiE reader model finetuned on NQ",
+    },
+    "cos.model.reader.hotpot": {
+        "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/models/hotpot_path_reranker_checkpoint_best.pt",
+        "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/models/hotpot_path_reranker_checkpoint_best.pt"],
+        "desc": "The large path reranker and reader model finetuned on HotpotQA",
+    },
+    "cos.embeds.hotpot": {
+        "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/hotpot_wiki_linker_shard0_gpu{i}" for i in range(16)] +
+                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/hotpot_wiki_retriever_shard0_gpu{i}" for i in range(16)]
+        "desc": "The computed embeddings for HotpotQA (both retriever index and linker index)",
+    },
+    "cos.embeds.nq": {
+        "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/nq_wiki_linker_shard0_gpu{i}" for i in range(16)] +
+                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/nq_wiki_retriever_shard0_gpu{i}" for i in range(16)]
+        "desc": "The computed embeddings for NQ (both retriever index and linker index)",
+    },
+    "cos.embeds.ott": {
+        "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/ott_table_original_shard0_gpu{i}" for i in range(16)] +
+                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/ott_wiki_linker_shard0_gpu{i}" for i in range(16)] +
+                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/ott_wiki_retriever_shard0_gpu{i}" for i in range(16)]
+        "desc": "The computed embeddings for OTT-QA (both retriever index and linker index for text, only retriever index for tables)",
+    },
 }
 
 def download_resource(link: str, resource_key: str, out_dir: str):
