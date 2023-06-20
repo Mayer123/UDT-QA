@@ -250,18 +250,18 @@ RESOURCES_MAP = {
     },
     "cos.embeds.hotpot": {
         "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/hotpot_wiki_linker_shard0_gpu{i}" for i in range(16)] +
-                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/hotpot_wiki_retriever_shard0_gpu{i}" for i in range(16)]
+                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/hotpot_wiki_retriever_shard0_gpu{i}" for i in range(16)],
         "desc": "The computed embeddings for HotpotQA (both retriever index and linker index)",
     },
     "cos.embeds.nq": {
         "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/nq_wiki_linker_shard0_gpu{i}" for i in range(16)] +
-                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/nq_wiki_retriever_shard0_gpu{i}" for i in range(16)]
+                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/nq_wiki_retriever_shard0_gpu{i}" for i in range(16)],
         "desc": "The computed embeddings for NQ (both retriever index and linker index)",
     },
     "cos.embeds.ott": {
         "links": [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/ott_table_original_shard0_gpu{i}" for i in range(16)] +
                  [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/ott_wiki_linker_shard0_gpu{i}" for i in range(16)] +
-                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/ott_wiki_retriever_shard0_gpu{i}" for i in range(16)]
+                 [f"https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/embeds/ott_wiki_retriever_shard0_gpu{i}" for i in range(16)],
         "desc": "The computed embeddings for OTT-QA (both retriever index and linker index for text, only retriever index for tables)",
     },
 }

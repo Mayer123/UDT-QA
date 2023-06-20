@@ -102,8 +102,7 @@ thus you can run multiple processes to work on different pieces of data, if you 
 
 ## Training your own reader 
 If you are only interested in training a reader model, we also provide the reader training data (i.e. retriever results) for NQ in above 3 settings. 
-Again, you can download them using download_data.py. Note that we did not use the reader model implemented under the DPR folder and we used UnitedQA instead. 
-Stay tuned for the official implementation of [UnitedQA](https://github.com/microsoft/unitedQA).
+Again, you can download them using download_data.py. Note that we did not use the reader model implemented under the DPR folder and we used [UnitedQA](https://github.com/hao-cheng/UnitedQA-E) instead. 
 
 ## Cite 
 ```
