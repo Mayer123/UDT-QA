@@ -139,12 +139,22 @@ Again, you can download them using download_data.py. Note that we did not use th
     pages = "5360--5374",
 }
 
-@misc{ma2023chainofskills,
-    title={Chain-of-Skills: A Configurable Model for Open-domain Question Answering},
-    author={Kaixin Ma and Hao Cheng and Yu Zhang and Xiaodong Liu and Eric Nyberg and Jianfeng Gao},
-    year={2023},
-    eprint={2305.03130},
-    archivePrefix={arXiv},
-    primaryClass={cs.CL}
+@inproceedings{ma-etal-2023-chain,
+    title = "Chain-of-Skills: A Configurable Model for Open-Domain Question Answering",
+    author = "Ma, Kaixin  and
+      Cheng, Hao  and
+      Zhang, Yu  and
+      Liu, Xiaodong  and
+      Nyberg, Eric  and
+      Gao, Jianfeng",
+    booktitle = "Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+    month = jul,
+    year = "2023",
+    address = "Toronto, Canada",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2023.acl-long.89",
+    doi = "10.18653/v1/2023.acl-long.89",
+    pages = "1599--1618",
 }
+
 ```
