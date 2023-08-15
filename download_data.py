@@ -245,7 +245,7 @@ RESOURCES_MAP = {
     },
     "cos.model.reader.hotpot": {
         "links": ["https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/models/hotpot_path_reranker_checkpoint_best.pt",
-        "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/models/hotpot_path_reranker_checkpoint_best.pt"],
+        "https://msrdeeplearning.blob.core.windows.net/udq-qa/COS/models/hotpot_reader_checkpoint_best.pt"],
         "desc": "The large path reranker and reader model finetuned on HotpotQA",
     },
     "cos.embeds.hotpot": {
