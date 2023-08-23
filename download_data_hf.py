@@ -12,7 +12,9 @@ RESOURCES_MAP = {
     "cos.data.hotpot": {'ID': 'kaixinm/COS', 'filenames': ['data/hotpot_data.zip']},
     "cos.data.nq": {'ID': 'kaixinm/COS', 'filenames': ['data/nq_data.zip']},
     "cos.data.ott": {'ID': 'kaixinm/COS', 'filenames': ['data/ott_data.zip']},
-    
+    "udtqa.knowledge.raw_table": {'ID': 'kaixinm/UDT-QA', 'filenames': ['knowledge_sources/tables_raw.zip']},
+    "udtqa.knowledge.V_table": {'ID': 'kaixinm/UDT-QA', 'filenames': ['knowledge_sources/tables_V.zip']},
+    "udtqa.knowledge.V_kb": {'ID': 'kaixinm/UDT-QA', 'filenames': ['knowledge_sources/WD_graphs_V.zip']},
 }
 
 def download(resource, output_dir):
