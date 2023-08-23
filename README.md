@@ -2,14 +2,11 @@
 
 **\*\*\*\*\* Migrating our models and data to HuggingFace \*\*\*\*\***
 
-Due to the restricted access of the Azure blob storage, we are migrating our models and data to HuggingFace. Please use the following command to download our models and data. The resource key is the same as the resource key in download_data.py.
+Due to the restricted access of the Azure blob storage, we are migrating our models and data to HuggingFace. Please use the following command to download our models and data. The resource keys are the same as in download_data.py.
 
 ```
 python download_data_hf.py --resource resource_key --output_dir your_output_dir 
 ```
-
-
-The code and model for the paper "Chain-of-Skills: A Configurable Model for Open-domain Question Answering" (ACL 2023) is added. See full paper [here](https://arxiv.org/abs/2305.03130)
 
 # Update 06/2023
 
