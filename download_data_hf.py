@@ -15,6 +15,16 @@ RESOURCES_MAP = {
     "udtqa.knowledge.raw_table": {'ID': 'kaixinm/UDT-QA', 'filenames': ['knowledge_sources/tables_raw.zip']},
     "udtqa.knowledge.V_table": {'ID': 'kaixinm/UDT-QA', 'filenames': ['knowledge_sources/tables_V.zip']},
     "udtqa.knowledge.V_kb": {'ID': 'kaixinm/UDT-QA', 'filenames': ['knowledge_sources/WD_graphs_V.zip']},
+    "core.knowledge": {'ID': 'kaixinm/CORE', 'filenames': ['data/knowledge.zip'], 'description': 'The OTT-QA table sets and OTT-QA Wiki passages'},
+    "core.model.retriever": {'ID': 'kaixinm/CORE', 'filenames': ['models/core_joint_retriever.ckpt']},
+    "core.model.linker": {'ID': 'kaixinm/CORE', 'filenames': ['models/core_span_proposal.ckpt', 'models/core_table_linker.ckpt']},
+    "core.model.reader": {'ID': 'kaixinm/CORE', 'filenames': ['models/pytorch_model.bin', 'models/config.json']},
+    "core.data.retriever": {'ID': 'kaixinm/CORE', 'filenames': ['data/retriever_data.zip']},
+    "core.data.retriever_ott_results": {'ID': 'kaixinm/CORE', 'filenames': ['data/retriever_results/ott_results.zip']},
+    "core.data.retriever_nq_results": {'ID': 'kaixinm/CORE', 'filenames': ['data/retriever_results/nq_results.zip']},
+    "core.data.linker": {'ID': 'kaixinm/CORE', 'filenames': ['data/linker_data.zip']},
+    "core.data.reader_ott": {'ID': 'kaixinm/CORE', 'filenames': ['data/reader/ott_reader.zip']},
+    "core.data.reader_nq": {'ID': 'kaixinm/CORE', 'filenames': ['data/reader/nq_reader.zip']},
 }
 
 def download(resource, output_dir):
