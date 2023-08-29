@@ -25,6 +25,9 @@ RESOURCES_MAP = {
     "core.data.linker": {'ID': 'kaixinm/CORE', 'filenames': ['data/linker_data.zip']},
     "core.data.reader_ott": {'ID': 'kaixinm/CORE', 'filenames': ['data/reader/ott_reader.zip']},
     "core.data.reader_nq": {'ID': 'kaixinm/CORE', 'filenames': ['data/reader/nq_reader.zip']},
+    "cos.reader.data.hotpot": {'ID': 'kaixinm/COS', 'filenames': ['data/results/hotpot_reader.zip']},
+    "cos.reader.data.nq": {'ID': 'kaixinm/COS', 'filenames': ['data/results/nq_reader.zip']},
+    "cos.reader.data.ott": {'ID': 'kaixinm/COS', 'filenames': ['data/results/ott_reader.zip']},
 }
 
 def download(resource, output_dir):
